@@ -140,6 +140,8 @@ public class AnsibleInventoryReaderTest {
 						.getVariables().iterator().next().getValue());
 			}
 		}
+
+		Assert.assertEquals("value1", inventory.getGroup("group1").getVariable("var1").getValue());
 	}
 
 	@Test
@@ -159,6 +161,39 @@ public class AnsibleInventoryReaderTest {
 						group.getSubgroups().iterator().next().getHosts().iterator().next().getVariables().size());
 			}
 		}
+	}
+
+	@Test
+	public void testReadVarWithWhitespaces() {
+		final String inventoryText =    "[test]\n" +
+                                        "host1 host1var1=\"hostval 1\" host1var2='enclosed by single quotes'\n" +
+                                        "host2 host2var1=\"this = a test\" host2var2=\"yet another[0] test!\"\n" +
+                                        "[test:vars]\n" +
+                                        "var1 = val1\n" +
+                                        "var2 = \"this = a test\"\n" +
+                                        "var3 = 'enclosed by single quotes'\n" +
+                                        "var4=no quotes at all\n" +
+                                        "var6 = this = also possible =\n" +
+                                        "var5 = no quotes no linebreak (end of file)";
+
+		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
+
+		Assert.assertEquals("val1", inventory.getGroup("test").getVariable("var1").getValue());
+		Assert.assertEquals("\"this = a test\"", inventory.getGroup("test").getVariable("var2").getValue());
+		Assert.assertEquals("\"hostval 1\"", inventory.getGroup("test").getHost("host1").getVariable("host1var1").getValue());
+		Assert.assertEquals("\"this = a test\"", inventory.getGroup("test").getHost("host2").getVariable("host2var1").getValue());
+		Assert.assertEquals("\"yet another[0] test!\"", inventory.getGroup("test").getHost("host2").getVariable("host2var2").getValue());
+
+		// Single quotes
+        Assert.assertEquals("'enclosed by single quotes'", inventory.getGroup("test").getHost("host1").getVariable("host1var2").getValue());
+        Assert.assertEquals("'enclosed by single quotes'", inventory.getGroup("test").getVariable("var3").getValue());
+
+        // Whitespace values in var section without double/sinle quotes
+        Assert.assertEquals("no quotes at all", inventory.getGroup("test").getVariable("var4").getValue());
+        Assert.assertEquals("no quotes no linebreak (end of file)", inventory.getGroup("test").getVariable("var5").getValue());
+
+        // We also support strange things like that (as Ansbile also allows it)
+		Assert.assertEquals("this = also possible =", inventory.getGroup("test").getVariable("var6").getValue());
 	}
 
 }
