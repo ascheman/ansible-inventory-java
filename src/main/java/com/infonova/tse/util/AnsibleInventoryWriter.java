@@ -15,15 +15,15 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package it.andreascarpino.ansible.inventory.util;
+package com.infonova.tse.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import it.andreascarpino.ansible.inventory.type.AnsibleGroup;
-import it.andreascarpino.ansible.inventory.type.AnsibleHost;
-import it.andreascarpino.ansible.inventory.type.AnsibleInventory;
-import it.andreascarpino.ansible.inventory.type.AnsibleVariable;
+import com.infonova.tse.type.AnsibleHost;
+import com.infonova.tse.type.AnsibleVariable;
+import com.infonova.tse.type.AnsibleGroup;
+import com.infonova.tse.type.AnsibleInventory;
 
 /**
  * @author Andrea Scarpino

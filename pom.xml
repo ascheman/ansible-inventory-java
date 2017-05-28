@@ -9,7 +9,7 @@
 
 	<name>Ansible Inventory Java</name>
 	<description>A library to read and write Ansible static inventories</description>
-	<url>https://gitlab.com/ilpianista/ansible-inventory-java</url>
+	<url>https://github.com/rawbertp/ansible-inventory-java</url>
 
 	<licenses>
 		<license>
