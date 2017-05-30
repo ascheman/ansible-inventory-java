@@ -144,6 +144,27 @@ public class AnsibleInventoryReaderTest {
 	}
 
 	@Test
+	public void testReadGroupVarsWithWindowsLineBreaks() {
+		final String inventoryText = "[subgroup1]\r\nhost1\r\n[subgroup2]\r\nhost2\r\n[group1:children]\r\nsubgroup1\r\nsubgroup2\r\n[group1:vars]\r\nvar1=value1\r\n";
+
+		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
+
+		Assert.assertEquals(3, inventory.getGroups().size());
+
+		for (AnsibleGroup group : inventory.getGroups()) {
+			if (group.getName().equals("group1")) {
+				Assert.assertEquals("var1", group.getSubgroups().iterator().next().getHosts().iterator().next()
+						.getVariables().iterator().next().getName());
+				Assert.assertEquals("value1", group.getSubgroups().iterator().next().getHosts().iterator().next()
+						.getVariables().iterator().next().getValue());
+			}
+		}
+
+		Assert.assertEquals("value1", inventory.getGroup("group1").getVariable("var1").getValue());
+	}
+
+
+	@Test
 	public void testReadAnsibleExample() {
 		final String inventoryText = "[atlanta]\nhost1\nhost2\n\n[raleigh]\nhost2\nhost3\n\n[southeast:children]\n"
 				+ "atlanta\nraleigh\n\n[southeast:vars]\nsome_server=foo.southeast.example.com\nhalon_system_timeout=30"
