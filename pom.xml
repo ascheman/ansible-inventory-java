@@ -9,7 +9,7 @@
 
 	<name>Ansible Inventory Java</name>
 	<description>A library to read and write Ansible static inventories</description>
-	<url>https://github.com/rawbertp/ansible-inventory-java</url>
+	<url>https://github.com/infonova/ansible-inventory-java</url>
 
 	<licenses>
 		<license>
@@ -20,9 +20,9 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/rawbertp/ansible-inventory-java.git</url>
-		<connection>scm:git:git://github.com/rawbertp/ansible-inventory-java.git</connection>
-		<developerConnection>scm:git:git@github.com/rawbertp/ansible-inventory-java.git</developerConnection>
+		<url>https://github.com/infonova/ansible-inventory-java.git</url>
+		<connection>scm:git:git://github.com/infonova/ansible-inventory-java.git</connection>
+		<developerConnection>scm:git:git@github.com/infonova/ansible-inventory-java.git</developerConnection>
 	</scm>
 
 	<build>
