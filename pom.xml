@@ -21,8 +21,7 @@
 
 	<scm>
 		<url>https://github.com/infonova/ansible-inventory-java.git</url>
-		<connection>scm:git:git://github.com/infonova/ansible-inventory-java.git</connection>
-		<developerConnection>scm:git:git@github.com/infonova/ansible-inventory-java.git</developerConnection>
+		<developerConnection>scm:git:https://github.com/infonova/ansible-inventory-java.git</developerConnection>
 	</scm>
 
 	<build>
@@ -63,6 +62,12 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
 			</plugin>
 		</plugins>
 	</build>
