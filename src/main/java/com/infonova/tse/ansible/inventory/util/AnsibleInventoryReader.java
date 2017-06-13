@@ -85,6 +85,11 @@ public class AnsibleInventoryReader {
 					quoteSign = "\n";
 				}
 
+				// We are reading a comment
+				if (tmpToken != null && (tmpToken.startsWith(";") || tmpToken.startsWith("#"))) {
+					continue;
+				}
+
 				if (tmpToken != null) {
                     if (!tmpToken.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
 						isValueWithWhitespace = true;
