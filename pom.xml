@@ -4,7 +4,7 @@
 
 	<groupId>com.infonova.tse</groupId>
 	<artifactId>ansible-inventory-java</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.1</version>
 
 	<name>Ansible Inventory Java</name>
 	<description>A library to read and write Ansible static inventories</description>
