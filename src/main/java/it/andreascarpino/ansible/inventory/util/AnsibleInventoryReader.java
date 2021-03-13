@@ -39,6 +39,14 @@ public class AnsibleInventoryReader {
 
 	public static AnsibleInventory read(String text) {
 		final AnsibleInventory inventory = new AnsibleInventory();
+		// "all" is the default group which is always present and contains all hosts,
+		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
+		AnsibleGroup all = new AnsibleGroup("all");
+		inventory.addGroup(all);
+		// "ungrouped" is the default group which is always present and contains hosts which do not belong to any
+		//other group, cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
+		AnsibleGroup ungrouped = new AnsibleGroup("ungrouped");
+		inventory.addGroup(ungrouped);
 
 		final StringTokenizer tokenizer = new StringTokenizer(text, " \t\n\r\f", true);
 
@@ -117,6 +125,8 @@ public class AnsibleInventoryReader {
 				if (group == null) {
 					host = new AnsibleHost(token);
 					inventory.addHost(host);
+					all.addHost(host);
+					ungrouped.addHost(host);
 				} else if (isChildrenBlock) {
 					final AnsibleGroup g = inventory.getGroup(token);
 					if (g != null) {
@@ -126,6 +136,7 @@ public class AnsibleInventoryReader {
 					}
 				} else {
 					host = new AnsibleHost(token);
+					all.addHost(host);
 					group.addHost(host);
 				}
 			}

@@ -37,9 +37,9 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(1, inventory.getGroups().size());
+		Assert.assertEquals(3, inventory.getGroups().size());
 		AnsibleGroup group = inventory.getGroups().iterator().next();
-		Assert.assertEquals("group1", group.getName());
+		Assert.assertEquals("all", group.getName());
 		Assert.assertEquals(1, group.getHosts().size());
 
 		AnsibleHost host = group.getHosts().iterator().next();
@@ -55,7 +55,7 @@ public class AnsibleInventoryReaderTest {
 		inventory = AnsibleInventoryReader.read(inventoryText);
 		group = inventory.getGroups().iterator().next();
 
-		Assert.assertEquals(1, inventory.getGroups().size());
+		Assert.assertEquals(3, inventory.getGroups().size());
 		Assert.assertEquals(3, group.getHosts().size());
 
 		for (AnsibleHost h : group.getHosts()) {
@@ -76,7 +76,7 @@ public class AnsibleInventoryReaderTest {
 
 		inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(0, inventory.getGroups().size());
+		Assert.assertEquals(2, inventory.getGroups().size());
 		Assert.assertEquals(1, inventory.getHosts().size());
 		Assert.assertEquals(1, inventory.getHosts().iterator().next().getVariables().size());
 	}
@@ -87,7 +87,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(0, inventory.getGroups().size());
+		Assert.assertEquals(2, inventory.getGroups().size());
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(0, inventory.getGroups().size());
+		Assert.assertEquals(2, inventory.getGroups().size());
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(1, inventory.getGroups().size());
+		Assert.assertEquals(3, inventory.getGroups().size());
 		Assert.assertEquals(0, inventory.getGroups().iterator().next().getHosts().size());
 	}
 
@@ -115,7 +115,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(3, inventory.getGroups().size());
+		Assert.assertEquals(5, inventory.getGroups().size());
 
 		for (AnsibleGroup group : inventory.getGroups()) {
 			if (group.getName().equals("group1")) {
@@ -130,7 +130,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(3, inventory.getGroups().size());
+		Assert.assertEquals(5, inventory.getGroups().size());
 
 		for (AnsibleGroup group : inventory.getGroups()) {
 			if (group.getName().equals("group1")) {
@@ -151,7 +151,7 @@ public class AnsibleInventoryReaderTest {
 
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
-		Assert.assertEquals(4, inventory.getGroups().size());
+		Assert.assertEquals(6, inventory.getGroups().size());
 
 		for (AnsibleGroup group : inventory.getGroups()) {
 			if (group.getName().equals("southeast")) {
