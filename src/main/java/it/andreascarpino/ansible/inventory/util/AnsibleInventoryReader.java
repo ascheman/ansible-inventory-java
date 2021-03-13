@@ -37,7 +37,7 @@ public class AnsibleInventoryReader {
 	private AnsibleInventoryReader() {
 	}
 
-	protected class AnsibleInventoryFactory {
+	protected static class AnsibleInventoryFactory {
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
@@ -53,18 +53,18 @@ public class AnsibleInventoryReader {
 
 		AnsibleGroup group = null;
 		AnsibleHost host = null;
-		boolean skipComment = false;
 		boolean isVarsBlock = false;
 		boolean isChildrenBlock = false;
 
 		protected AnsibleInventory of (final String text) {
 			final StringTokenizer tokenizer = new StringTokenizer(text, " \t\n\r\f", true);
 
+			boolean skipComment = false;
 			while (tokenizer.hasMoreTokens()) {
 				final String token = tokenizer.nextToken();
 
 				// New line, reset the comment flag
-				if ("\n".equals(token)) {
+				if (isNewlineToken(token)) {
 					skipComment = false;
 					continue;
 				}
@@ -75,79 +75,111 @@ public class AnsibleInventoryReader {
 				}
 
 				// Ignore separators
-				if (" ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token)) {
+				if (isSeparatorToken(token)) {
 					continue;
 				}
 
 				// We are reading a comment
-				if (token.startsWith(";") || token.startsWith("#")) {
+				if (isCommentToken(token)) {
 					skipComment = true;
 					continue;
 				}
 
-				if (token.startsWith("[")) {
-					host = null;
-					isChildrenBlock = false;
-					isVarsBlock = false;
-
-					String groupName = token.replaceAll("^\\[", "").replaceAll("]$", "");
-
-					if (groupName.contains(":")) {
-						final String[] g = groupName.split(":");
-
-						groupName = g[0];
-
-						if ("vars".equals(g[1])) {
-							isVarsBlock = true;
-							group = inventory.getGroup(groupName);
-						} else if ("children".equals(g[1])) {
-							isChildrenBlock = true;
-							group = new AnsibleGroup(groupName);
-							inventory.addGroup(group);
-						}
-					} else {
-						group = new AnsibleGroup(groupName);
-						inventory.addGroup(group);
-					}
-				} else if (token.contains("=")) {
-					final String[] v = token.split("=");
-					// Replace YAML backslashes escapes
-					final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
-
-					if (host != null) {
-						host.addVariable(variable);
-					} else if (isVarsBlock && group != null) {
-						for (AnsibleGroup s : group.getSubgroups()) {
-							for (AnsibleHost h : s.getHosts()) {
-								h.addVariable(variable);
-							}
-						}
-						for (AnsibleHost h : group.getHosts()) {
-							h.addVariable(variable);
-						}
-					}
+				if (isGroupStartToken(token)) {
+					createNewAnsibleGroup(token);
+				} else if (isVariableToken(token)) {
+					addVariable(token);
 				} else {
-					if (group == null) {
-						host = new AnsibleHost(token);
-						inventory.addHost(host);
-						all.addHost(host);
-						ungrouped.addHost(host);
-					} else if (isChildrenBlock) {
-						final AnsibleGroup g = inventory.getGroup(token);
-						if (g != null) {
-							group.addSubgroup(g);
-						} else {
-							group.addSubgroup(new AnsibleGroup(token));
-						}
-					} else {
-						host = new AnsibleHost(token);
-						all.addHost(host);
-						group.addHost(host);
-					}
+					addHost(token);
 				}
 			}
 
 			return inventory;
+		}
+
+		private boolean isNewlineToken(String token) {
+			return "\n".equals(token);
+		}
+
+		private boolean isSeparatorToken(String token) {
+			return " ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token);
+		}
+
+		private boolean isCommentToken(String token) {
+			return token.startsWith(";") || token.startsWith("#");
+		}
+
+		private boolean isGroupStartToken(String token) {
+			return token.startsWith("[");
+		}
+
+		private void createNewAnsibleGroup(String token) {
+			host = null;
+			isChildrenBlock = false;
+			isVarsBlock = false;
+
+			String groupName = token.replaceAll("^\\[", "").replaceAll("]$", "");
+
+			if (groupName.contains(":")) {
+				final String[] g = groupName.split(":");
+
+				groupName = g[0];
+
+				if ("vars".equals(g[1])) {
+					isVarsBlock = true;
+					group = inventory.getGroup(groupName);
+				} else if ("children".equals(g[1])) {
+					isChildrenBlock = true;
+					group = new AnsibleGroup(groupName);
+					inventory.addGroup(group);
+				}
+			} else {
+				group = new AnsibleGroup(groupName);
+				inventory.addGroup(group);
+			}
+		}
+
+		private boolean isVariableToken(String token) {
+			return token.contains("=");
+		}
+
+		private void addVariable(String token) {
+			final String[] v = token.split("=");
+			// Replace YAML backslashes escapes
+			final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
+
+			if (host != null) {
+				host.addVariable(variable);
+			} else if (isVarsBlock && group != null) {
+				for (AnsibleGroup s : group.getSubgroups()) {
+					for (AnsibleHost h : s.getHosts()) {
+						h.addVariable(variable);
+					}
+				}
+				for (AnsibleHost h : group.getHosts()) {
+					h.addVariable(variable);
+				}
+			}
+		}
+
+		private void addHost(String token) {
+			if (group == null) {
+				host = new AnsibleHost(token);
+				inventory.addHost(host);
+				all.addHost(host);
+				ungrouped.addHost(host);
+			} else if (isChildrenBlock) {
+				final AnsibleGroup g = inventory.getGroup(token);
+				if (g != null) {
+					group.addSubgroup(g);
+				} else {
+					group.addSubgroup(new AnsibleGroup(token));
+				}
+			} else {
+				host = new AnsibleHost(token);
+				all.addHost(host);
+				group.addHost(host);
+			}
 		}
 	}
 
