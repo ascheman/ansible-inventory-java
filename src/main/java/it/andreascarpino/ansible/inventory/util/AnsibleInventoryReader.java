@@ -37,112 +37,126 @@ public class AnsibleInventoryReader {
 	private AnsibleInventoryReader() {
 	}
 
-	public static AnsibleInventory read(String text) {
+	protected class AnsibleInventoryFactory {
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
 		AnsibleGroup all = new AnsibleGroup("all");
-		inventory.addGroup(all);
 		// "ungrouped" is the default group which is always present and contains hosts which do not belong to any
 		//other group, cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
 		AnsibleGroup ungrouped = new AnsibleGroup("ungrouped");
-		inventory.addGroup(ungrouped);
 
-		final StringTokenizer tokenizer = new StringTokenizer(text, " \t\n\r\f", true);
+		protected AnsibleInventoryFactory() {
+			inventory.addGroup(all);
+			inventory.addGroup(ungrouped);
+		}
 
 		AnsibleGroup group = null;
 		AnsibleHost host = null;
 		boolean skipComment = false;
 		boolean isVarsBlock = false;
 		boolean isChildrenBlock = false;
-		while (tokenizer.hasMoreTokens()) {
-			final String token = tokenizer.nextToken();
 
-			// New line, reset the comment flag
-			if ("\n".equals(token)) {
-				skipComment = false;
-				continue;
-			}
+		protected AnsibleInventory of (final String text) {
+			final StringTokenizer tokenizer = new StringTokenizer(text, " \t\n\r\f", true);
 
-			// We are still reading a comment line
-			if (skipComment) {
-				continue;
-			}
+			while (tokenizer.hasMoreTokens()) {
+				final String token = tokenizer.nextToken();
 
-			// Ignore separators
-			if (" ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token)) {
-				continue;
-			}
+				// New line, reset the comment flag
+				if ("\n".equals(token)) {
+					skipComment = false;
+					continue;
+				}
 
-			// We are reading a comment
-			if (token.startsWith(";") || token.startsWith("#")) {
-				skipComment = true;
-				continue;
-			}
+				// We are still reading a comment line
+				if (skipComment) {
+					continue;
+				}
 
-			if (token.startsWith("[")) {
-				host = null;
-				isChildrenBlock = false;
-				isVarsBlock = false;
+				// Ignore separators
+				if (" ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token)) {
+					continue;
+				}
 
-				String groupName = token.replaceAll("^\\[", "").replaceAll("]$", "");
+				// We are reading a comment
+				if (token.startsWith(";") || token.startsWith("#")) {
+					skipComment = true;
+					continue;
+				}
 
-				if (groupName.contains(":")) {
-					final String[] g = groupName.split(":");
+				if (token.startsWith("[")) {
+					host = null;
+					isChildrenBlock = false;
+					isVarsBlock = false;
 
-					groupName = g[0];
+					String groupName = token.replaceAll("^\\[", "").replaceAll("]$", "");
 
-					if ("vars".equals(g[1])) {
-						isVarsBlock = true;
-						group = inventory.getGroup(groupName);
-					} else if ("children".equals(g[1])) {
-						isChildrenBlock = true;
+					if (groupName.contains(":")) {
+						final String[] g = groupName.split(":");
+
+						groupName = g[0];
+
+						if ("vars".equals(g[1])) {
+							isVarsBlock = true;
+							group = inventory.getGroup(groupName);
+						} else if ("children".equals(g[1])) {
+							isChildrenBlock = true;
+							group = new AnsibleGroup(groupName);
+							inventory.addGroup(group);
+						}
+					} else {
 						group = new AnsibleGroup(groupName);
 						inventory.addGroup(group);
 					}
-				} else {
-					group = new AnsibleGroup(groupName);
-					inventory.addGroup(group);
-				}
-			} else if (token.contains("=")) {
-				final String[] v = token.split("=");
-				// Replace YAML backslashes escapes
-				final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
+				} else if (token.contains("=")) {
+					final String[] v = token.split("=");
+					// Replace YAML backslashes escapes
+					final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
 
-				if (host != null) {
-					host.addVariable(variable);
-				} else if (isVarsBlock && group != null) {
-					for (AnsibleGroup s : group.getSubgroups()) {
-						for (AnsibleHost h : s.getHosts()) {
+					if (host != null) {
+						host.addVariable(variable);
+					} else if (isVarsBlock && group != null) {
+						for (AnsibleGroup s : group.getSubgroups()) {
+							for (AnsibleHost h : s.getHosts()) {
+								h.addVariable(variable);
+							}
+						}
+						for (AnsibleHost h : group.getHosts()) {
 							h.addVariable(variable);
 						}
 					}
-					for (AnsibleHost h : group.getHosts()) {
-						h.addVariable(variable);
-					}
-				}
-			} else {
-				if (group == null) {
-					host = new AnsibleHost(token);
-					inventory.addHost(host);
-					all.addHost(host);
-					ungrouped.addHost(host);
-				} else if (isChildrenBlock) {
-					final AnsibleGroup g = inventory.getGroup(token);
-					if (g != null) {
-						group.addSubgroup(g);
-					} else {
-						group.addSubgroup(new AnsibleGroup(token));
-					}
 				} else {
-					host = new AnsibleHost(token);
-					all.addHost(host);
-					group.addHost(host);
+					if (group == null) {
+						host = new AnsibleHost(token);
+						inventory.addHost(host);
+						all.addHost(host);
+						ungrouped.addHost(host);
+					} else if (isChildrenBlock) {
+						final AnsibleGroup g = inventory.getGroup(token);
+						if (g != null) {
+							group.addSubgroup(g);
+						} else {
+							group.addSubgroup(new AnsibleGroup(token));
+						}
+					} else {
+						host = new AnsibleHost(token);
+						all.addHost(host);
+						group.addHost(host);
+					}
 				}
 			}
-		}
 
-		return inventory;
+			return inventory;
+		}
+	}
+
+	protected AnsibleInventory of (final String text) {
+		return new AnsibleInventoryFactory().of(text);
+	}
+
+	public static AnsibleInventory read(String text) {
+		return new AnsibleInventoryReader().of(text);
 	}
 
 	public static AnsibleInventory read(final Path inventoryPath) throws IOException {
