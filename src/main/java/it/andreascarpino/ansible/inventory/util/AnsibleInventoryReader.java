@@ -147,8 +147,9 @@ public class AnsibleInventoryReader {
 
 	public static AnsibleInventory read(final Path inventoryPath) throws IOException {
 		StringBuilder contentBuilder = new StringBuilder();
-		Stream<String> stream = Files.lines(inventoryPath, StandardCharsets.UTF_8);
-		stream.forEach(s -> contentBuilder.append(s).append("\n"));
+		try (Stream<String> stream = Files.lines(inventoryPath, StandardCharsets.UTF_8)) {
+			stream.forEach(s -> contentBuilder.append(s).append("\n"));
+		}
 
 		return read(contentBuilder.toString());
 	}
