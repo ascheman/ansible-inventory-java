@@ -17,7 +17,7 @@ public class AnsibleInventoryReaderIT {
     public void readVagrantInventoryFile() throws IOException {
         AnsibleInventory ansibleInventory =
                 AnsibleInventoryReader.read(Paths.get(VAGRANT_INVENTORY_PATH).toAbsolutePath());
-        Assert.assertEquals(1, ansibleInventory.getHosts().size());
+        Assert.assertEquals(7, ansibleInventory.getHosts().size());
         Assert.assertEquals(1, ansibleInventory.getGroup("ungrouped").getHosts().size());
         Assert.assertEquals(7, ansibleInventory.getGroup("all").getHosts().size());
         Assert.assertEquals(2, ansibleInventory.getGroup("lamp_www").getHosts().size());

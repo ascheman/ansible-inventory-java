@@ -177,6 +177,7 @@ public class AnsibleInventoryReader {
 				}
 			} else {
 				host = new AnsibleHost(token);
+				inventory.addHost(host);
 				all.addHost(host);
 				group.addHost(host);
 			}
