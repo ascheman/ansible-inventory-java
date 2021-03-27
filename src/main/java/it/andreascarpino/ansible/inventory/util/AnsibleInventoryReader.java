@@ -151,6 +151,7 @@ public class AnsibleInventoryReader {
 			if (host != null) {
 				host.addVariable(variable);
 			} else if (isVarsBlock && group != null) {
+				group.addVariable(variable);
 				for (AnsibleGroup s : group.getSubgroups()) {
 					for (AnsibleHost h : s.getHosts()) {
 						h.addVariable(variable);
