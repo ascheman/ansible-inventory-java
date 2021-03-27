@@ -1,0 +1,21 @@
+= ansible-inventory-java
+
+image:https://app.fossa.io/api/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java.svg?type=shield[FOSSA Status,link=https://app.fossa.io/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java?ref=badge_shield]
+image:https://gitlab.com/ascheman/ansible-inventory-java/badges/master/pipeline.svg[Build Status,link=https://gitlab.com/ascheman/ansible-inventory-java/pipelines]
+
+This code is a Java library to read and write https://www.ansible.com/[Ansible] https://docs.ansible.com/ansible/intro_inventory.html[static inventories].
+It is a fork of https://gitlab.com/ilpianista/ansible-inventory-java/ / https://github.com/ilpianista/ansible-inventory-java/ - thanks to https://gitlab.com/ilpianista[@ilpianista] for the the great work so far.
+
+== Build
+
+----
+$ git clone https://gitlab.com/ascheman/ansible-inventory-java.git
+$ cd ansible-inventory-java
+$ mvn clean install
+----
+
+== License
+
+link:LICENSE.txt[MIT]
+
+image:https://app.fossa.io/api/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java.svg?type=large[FOSSA Status,link=https://app.fossa.io/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java?ref=badge_large]
