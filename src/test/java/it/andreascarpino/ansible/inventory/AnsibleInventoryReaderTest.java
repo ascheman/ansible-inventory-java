@@ -222,4 +222,17 @@ public class AnsibleInventoryReaderTest {
 		Assert.assertEquals("value1", inventory.getGroup("group1").getVariable("var1").getValue());
 	}
 
+	@Test
+	public void testVarComments() {
+		final String inventoryText = "[test]\nhost1\n[test:vars]\nvar1=val1\n#foo=bar\nvar2 = #val2\n;var3=commented out\nvar4=val4";
+		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
+
+		Assert.assertEquals(null, inventory.getGroup("test").getVariable("foo"));
+		Assert.assertEquals(null, inventory.getGroup("test").getVariable("#foo"));
+		Assert.assertEquals("val1", inventory.getGroup("test").getVariable("var1").getValue());
+		Assert.assertEquals("#val2", inventory.getGroup("test").getVariable("var2").getValue());
+		Assert.assertEquals(null, inventory.getGroup("test").getVariable("var3"));
+		Assert.assertEquals("val4", inventory.getGroup("test").getVariable("var4").getValue());
+
+	}
 }
