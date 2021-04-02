@@ -99,8 +99,8 @@ public class AnsibleInventoryReader {
 					if (tmpToken != null) {
 						if (!tmpToken.endsWith(quoteSign)) {
 							isValueWithWhitespace = true;
+							continue;
 						}
-						continue;
 					}
 				}
 
@@ -187,16 +187,23 @@ public class AnsibleInventoryReader {
 
 				if ("vars".equals(g[1])) {
 					isVarsBlock = true;
-					group = inventory.getGroup(groupName);
+					group = getOrAddGroup(groupName, inventory);
 				} else if ("children".equals(g[1])) {
 					isChildrenBlock = true;
-					group = new AnsibleGroup(groupName);
-					inventory.addGroup(group);
+					group = getOrAddGroup(groupName, inventory);
 				}
 			} else {
+				group = getOrAddGroup(groupName, inventory);
+			}
+		}
+
+		private static AnsibleGroup getOrAddGroup(String groupName, AnsibleInventory inventory) {
+			AnsibleGroup group = inventory.getGroup(groupName);
+			if (group == null) {
 				group = new AnsibleGroup(groupName);
 				inventory.addGroup(group);
 			}
+			return group;
 		}
 
 		private boolean isVariableToken(String token) {
