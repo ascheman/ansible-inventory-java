@@ -5,6 +5,7 @@ image:https://gitlab.com/ascheman/ansible-inventory-java/badges/master/pipeline.
 
 This code is a Java library to read and write https://www.ansible.com/[Ansible] https://docs.ansible.com/ansible/intro_inventory.html[static inventories].
 It is a fork of https://gitlab.com/ilpianista/ansible-inventory-java/ / https://github.com/ilpianista/ansible-inventory-java/ - thanks to https://gitlab.com/ilpianista[@ilpianista] for the the great work so far.
+Most changes from https://github.com/infonova/ansible-inventory-java/ (improvements + fixes) up to the start of https://github.com/infonova/ansible-inventory-java/commit/b19bf3574a96c9a6975e3fffa270787a68ed374e[version 1.2-SNAPSHOT] were also incorporated - thanks to https://github.com/rawbertp[@rawbertp].
 
 == Build
 
