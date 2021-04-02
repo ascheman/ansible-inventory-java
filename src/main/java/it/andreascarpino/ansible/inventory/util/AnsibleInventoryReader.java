@@ -97,7 +97,7 @@ public class AnsibleInventoryReader {
 					}
 
 					if (tmpToken != null) {
-						if (!tmpToken.endsWith(quoteSign)) {
+						if (!tmpToken.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
 							isValueWithWhitespace = true;
 							continue;
 						}

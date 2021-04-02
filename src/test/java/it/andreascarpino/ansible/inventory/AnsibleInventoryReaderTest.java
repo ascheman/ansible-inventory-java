@@ -195,10 +195,17 @@ public class AnsibleInventoryReaderTest {
 	}
 
 	@Test
-	public void testReadGroupVarsWithWindowsLineBreaks() {
-		final String inventoryText = "[subgroup1]\r\nhost1\r\n[subgroup2]\r\nhost2\r\n[group1:children]\r\nsubgroup1\r"
-				+ "\nsubgroup2\r\n[group1:vars]\r\nvar1=value1\r\n";
+	public void testReadGroupVarsWithTrailingLineBreak() {
+		testReadGroupVars("[subgroup1]\nhost1\n[subgroup2]\nhost2\n[group1:children]\nsubgroup1\nsubgroup2\n[group1:vars]\nvar1=value1\n");
+	}
 
+	@Test
+	public void testReadGroupVarsWithOutTrailingLineBreak() {
+		testReadGroupVars("[subgroup1]\nhost1\n[subgroup2]\nhost2\n[group1:children]\nsubgroup1\nsubgroup2\n[group1:vars]\nvar1=value1");
+	}
+
+
+	private void testReadGroupVars(final String inventoryText) {
 		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
 
 		Assert.assertEquals(5, inventory.getGroups().size());
