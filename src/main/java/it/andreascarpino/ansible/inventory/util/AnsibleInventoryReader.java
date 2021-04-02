@@ -27,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -57,14 +59,72 @@ public class AnsibleInventoryReader {
 		boolean isChildrenBlock = false;
 
 		protected AnsibleInventory of (final String text) {
-			final StringTokenizer tokenizer = new StringTokenizer(text, " \t\n\r\f", true);
+			// Convert "foo = bar" to "foo=bar" (as Ansible allows to use that format but it would cause problems here)
+			Pattern p = Pattern.compile("^(\\S*)\\s*=\\s*(.*)$", Pattern.MULTILINE);
+			Matcher m = p.matcher(text);
+			String normalizedText = m.replaceAll("$1=$2");
+
+			final StringTokenizer tokenizer = new StringTokenizer(normalizedText, " \t\n\r\f", true);
 
 			boolean skipComment = false;
+			String tmpToken = null; // we need this "temp token" for whitespace values
+			boolean isValueWithWhitespace = false;
+			String quoteSign = "";
+
 			while (tokenizer.hasMoreTokens()) {
 				final String token = tokenizer.nextToken();
 
+				if (!isValueWithWhitespace) {
+					tmpToken = null; // reset the tmpToken
+				}
+
+				if (tmpToken == null) {
+					// check for whitespace values enclosed by double quotes
+					if (token.matches(".*?=\\s*\".*")) {
+						tmpToken = token;
+						quoteSign = "\"";
+					}
+					// check for whitespace values enclosed by single quotes
+					else if (token.matches(".*?=\\s*\'.*")) {
+						tmpToken = token;
+						quoteSign = "\'";
+
+					}
+					// in a vars block no quotes are required
+					else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
+						tmpToken = token;
+						quoteSign = "\n";
+					}
+
+					if (tmpToken != null) {
+						if (!tmpToken.endsWith(quoteSign)) {
+							isValueWithWhitespace = true;
+						}
+						continue;
+					}
+				}
+
+				// Have we reached the end of a value containing whitespace? (Or, are we at the end of the file?)
+				if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
+					if (!"\n".equals(token)) {
+						tmpToken += token;
+					}
+					isValueWithWhitespace = false;
+				}
+
+				if (isValueWithWhitespace) {
+					// Append the token to tmpToken
+					tmpToken += token;
+					continue;
+				} else {
+					// Otherwise, assign token to tmpToken
+					if (tmpToken == null) {
+						tmpToken = token;
+					}
+				}
+
 				// New line, reset the comment flag
-				if (isNewlineToken(token)) {
+				if (isNewlineToken(tmpToken)) {
 					skipComment = false;
 					continue;
 				}
@@ -75,22 +135,22 @@ public class AnsibleInventoryReader {
 				}
 
 				// Ignore separators
-				if (isSeparatorToken(token)) {
+				if (isSeparatorToken(tmpToken)) {
 					continue;
 				}
 
 				// We are reading a comment
-				if (isCommentToken(token)) {
+				if (isCommentToken(tmpToken)) {
 					skipComment = true;
 					continue;
 				}
 
-				if (isGroupStartToken(token)) {
-					createNewAnsibleGroup(token);
-				} else if (isVariableToken(token)) {
-					addVariable(token);
+				if (isGroupStartToken(tmpToken)) {
+					createNewAnsibleGroup(tmpToken);
+				} else if (isVariableToken(tmpToken)) {
+					addVariable(tmpToken);
 				} else {
-					addHost(token);
+					addHost(tmpToken);
 				}
 			}
 
@@ -144,22 +204,29 @@ public class AnsibleInventoryReader {
 		}
 
 		private void addVariable(String token) {
-			final String[] v = token.split("=");
+			final String[] v = token.split("=", 2);
 			// Replace YAML backslashes escapes
 			final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
 
 			if (host != null) {
 				host.addVariable(variable);
-			} else if (isVarsBlock && group != null) {
+			}
+
+			if (isVarsBlock && group != null) {
 				group.addVariable(variable);
 				for (AnsibleGroup s : group.getSubgroups()) {
 					for (AnsibleHost h : s.getHosts()) {
 						h.addVariable(variable);
 					}
+
+					if (s.getVariable(variable.getName()) == null) {
+						s.addVariable(variable);
+					}
 				}
 				for (AnsibleHost h : group.getHosts()) {
 					h.addVariable(variable);
 				}
+				group.addVariable(variable);
 			}
 		}
 
