@@ -17,14 +17,13 @@
  */
 package it.andreascarpino.ansible.inventory;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import it.andreascarpino.ansible.inventory.type.AnsibleGroup;
 import it.andreascarpino.ansible.inventory.type.AnsibleHost;
 import it.andreascarpino.ansible.inventory.type.AnsibleInventory;
 import it.andreascarpino.ansible.inventory.type.AnsibleVariable;
 import it.andreascarpino.ansible.inventory.util.AnsibleInventoryReader;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Andrea Scarpino
@@ -188,10 +187,32 @@ public class AnsibleInventoryReaderTest {
 
 		// Whitespace values in var section without double/sinle quotes
 		Assert.assertEquals("no quotes at all", inventory.getGroup("test").getVariable("var4").getValue());
-		Assert.assertEquals("no quotes no linebreak (end of file)", inventory.getGroup("test").getVariable("var5").getValue());
+		Assert.assertEquals("no quotes no linebreak (end of file)",
+				inventory.getGroup("test").getVariable("var5").getValue());
 
 		// We also support strange things like that (as Ansbile also allows it)
 		Assert.assertEquals("this = also possible =", inventory.getGroup("test").getVariable("var6").getValue());
+	}
+
+	@Test
+	public void testReadGroupVarsWithWindowsLineBreaks() {
+		final String inventoryText = "[subgroup1]\r\nhost1\r\n[subgroup2]\r\nhost2\r\n[group1:children]\r\nsubgroup1\r"
+				+ "\nsubgroup2\r\n[group1:vars]\r\nvar1=value1\r\n";
+
+		AnsibleInventory inventory = AnsibleInventoryReader.read(inventoryText);
+
+		Assert.assertEquals(5, inventory.getGroups().size());
+
+		for (AnsibleGroup group : inventory.getGroups()) {
+			if (group.getName().equals("group1")) {
+				Assert.assertEquals("var1", group.getSubgroups().iterator().next().getHosts().iterator().next()
+						.getVariables().iterator().next().getName());
+				Assert.assertEquals("value1", group.getSubgroups().iterator().next().getHosts().iterator().next()
+						.getVariables().iterator().next().getValue());
+			}
+		}
+
+		Assert.assertEquals("value1", inventory.getGroup("group1").getVariable("var1").getValue());
 	}
 
 }

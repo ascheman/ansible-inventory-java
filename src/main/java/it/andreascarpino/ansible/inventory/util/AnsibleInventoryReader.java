@@ -114,7 +114,9 @@ public class AnsibleInventoryReader {
 
 				if (isValueWithWhitespace) {
 					// Append the token to tmpToken
-					tmpToken += token;
+					if (! "\r".equals(token)) {
+						tmpToken += token;
+					}
 					continue;
 				} else {
 					// Otherwise, assign token to tmpToken
