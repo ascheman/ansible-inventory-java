@@ -74,8 +74,17 @@ public class AnsibleHost {
 		return null;
 	}
 
+	/**
+	 * @deprecated
+	 * @param variableName
+	 */
+	@Deprecated
 	public void removeVariable(String variableName) {
-		this.variables.remove(variableName);
+		this.removeVariable(new AnsibleVariable(variableName));
+	}
+
+	public void removeVariable(AnsibleVariable variable) {
+		this.variables.remove(variable);
 	}
 
 	public void clear() {
