@@ -59,10 +59,7 @@ public class AnsibleInventoryReader {
 		boolean isChildrenBlock = false;
 
 		protected AnsibleInventory of (final String text) {
-			// Convert "foo = bar" to "foo=bar" (as Ansible allows to use that format but it would cause problems here)
-			Pattern p = Pattern.compile("^(\\S*)\\s*=\\s*(.*)$", Pattern.MULTILINE);
-			Matcher m = p.matcher(text);
-			String normalizedText = m.replaceAll("$1=$2");
+			String normalizedText = getNormalizedText(text);
 
 			final StringTokenizer tokenizer = new StringTokenizer(normalizedText, " \t\n\r\f", true);
 
@@ -160,6 +157,13 @@ public class AnsibleInventoryReader {
 			}
 
 			return inventory;
+		}
+
+		private String getNormalizedText(final String text) {
+			// Convert "foo = bar" to "foo=bar" (as Ansible allows to use that format but it would cause problems here)
+			Pattern p = Pattern.compile("^(\\S*)\\s*=\\s*(.*)$", Pattern.MULTILINE);
+			Matcher m = p.matcher(text);
+			return m.replaceAll("$1=$2");
 		}
 
 		private boolean isNewlineToken(String token) {
