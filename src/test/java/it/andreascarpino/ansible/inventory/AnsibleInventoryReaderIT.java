@@ -29,6 +29,16 @@ public class AnsibleInventoryReaderIT {
                         .getGroup("lamp_db")
                         .getHost("192.168.2.6")
                         .getVariable("mysql_replication_role").getValue());
+
+        Assert.assertEquals("vagrant",
+                ansibleInventory
+                        .getGroup("lamp_db")
+                        .getHost("192.168.2.6")
+                        .getVariable("ansible_user").getValue());
+        Assert.assertEquals("vagrant",
+                ansibleInventory
+                        .getGroup("lamp_db")
+                        .getVariable("ansible_user").getValue());
     }
 
     @Test

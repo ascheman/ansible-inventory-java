@@ -18,3 +18,6 @@
 
 [lamp_memcached]
 192.168.2.7
+
+[lamp_db:vars]
+ansible_user=vagrant
