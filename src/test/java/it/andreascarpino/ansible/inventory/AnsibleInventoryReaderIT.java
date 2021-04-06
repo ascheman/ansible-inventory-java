@@ -6,7 +6,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class AnsibleInventoryReaderIT {
 
@@ -15,9 +18,21 @@ public class AnsibleInventoryReaderIT {
     public static final String VAGRANT_INVENTORY_PATH = "src/test/resources/inventories/vagrant-inventory";
 
     @Test
+    public void readVagrantInventoryLines() throws IOException {
+        final List<String> lines = Files.readAllLines(Paths.get(VAGRANT_INVENTORY_PATH).toAbsolutePath(), StandardCharsets.UTF_8);
+        AnsibleInventory ansibleInventory =
+                AnsibleInventoryReader.read(lines);
+        testVagrantInventory(ansibleInventory);
+    }
+
+    @Test
     public void readVagrantInventoryFile() throws IOException {
         AnsibleInventory ansibleInventory =
                 AnsibleInventoryReader.read(Paths.get(VAGRANT_INVENTORY_PATH).toAbsolutePath());
+        testVagrantInventory(ansibleInventory);
+    }
+
+    private void testVagrantInventory(final AnsibleInventory ansibleInventory) {
         Assert.assertEquals(7, ansibleInventory.getHosts().size());
         Assert.assertEquals(1, ansibleInventory.getGroup("ungrouped").getHosts().size());
         Assert.assertEquals(7, ansibleInventory.getGroup("all").getHosts().size());

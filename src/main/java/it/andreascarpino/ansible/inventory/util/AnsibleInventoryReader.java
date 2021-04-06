@@ -26,6 +26,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,10 +50,10 @@ public class AnsibleInventoryReader {
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
-		AnsibleGroup all = new AnsibleGroup("all");
+		private AnsibleGroup all = new AnsibleGroup("all");
 		// "ungrouped" is the default group which is always present and contains hosts which do not belong to any
 		//other group, cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
-		AnsibleGroup ungrouped = new AnsibleGroup("ungrouped");
+		private AnsibleGroup ungrouped = new AnsibleGroup("ungrouped");
 
 		protected AnsibleInventoryFactory() {
 			inventory.addGroup(all);
@@ -58,7 +65,191 @@ public class AnsibleInventoryReader {
 		boolean isVarsBlock = false;
 		boolean isChildrenBlock = false;
 
-		protected AnsibleInventory of (final String text) {
+		Map<String, List<String>> groupBlocks = new HashMap<>();
+		Map<String, List<String>> varBlocks = new HashMap<>();
+		Map<String, List<String>> childrenBlocks = new HashMap<>();
+		List<String> currentLines = new ArrayList<>();
+		String currentName = "ungrouped";
+		boolean isGroupBlock = true;
+
+		private void finishCurrentLines(final String line) {
+			if (isVarsBlock) {
+				varBlocks.put(currentName, currentLines);
+			} else if (isChildrenBlock) {
+				childrenBlocks.put(currentName, currentLines);
+			} else if (isGroupBlock) {
+				groupBlocks.put(currentName, currentLines);
+			} else {
+				throw new IllegalStateException("Unclear State: this should never heppen!");
+			}
+			currentName = line;
+			currentLines = new LinkedList<>();
+			isVarsBlock = false;
+			isChildrenBlock = false;
+			isGroupBlock = false;
+		}
+
+		private void startNewGroupVars(final String line) {
+			finishCurrentLines(line);
+			isVarsBlock = true;
+		}
+
+		private void startNewGroupChildren(final String line) {
+			finishCurrentLines(line);
+			isChildrenBlock = true;
+		}
+
+		private void startNewGroup(final String line) {
+			int closingParenPos = line.indexOf(']');
+			String groupName = line.substring(1, closingParenPos);
+			finishCurrentLines(groupName);
+			isGroupBlock = true;
+		}
+
+		protected AnsibleInventory of(final List<String> lines) {
+			lines.forEach(line -> {
+				String normalizedLine = getNormalizedText(line);
+				if (isGroupVarsStartToken(normalizedLine)) {
+					startNewGroupVars(normalizedLine);
+				} else if (isGroupChildrenStartToken(normalizedLine)) {
+					startNewGroupChildren(normalizedLine);
+				} else if (isGroupStartToken(normalizedLine)) {
+					startNewGroup(normalizedLine);
+				} else if (!isCommentToken(normalizedLine) && !normalizedLine.isEmpty()) {
+					currentLines.add(normalizedLine);
+				}
+			});
+			finishCurrentLines(null);
+
+			groupBlocks.forEach((name, listOfHostnamesWithVars) -> {
+				AnsibleGroup group = getOrAddGroup(name, inventory);
+				listOfHostnamesWithVars.forEach(line -> {
+					final String[] hostNameAndVars = line.split("[ \t]", 2);
+					AnsibleHost host = getOrAddHost(inventory, hostNameAndVars[0]);
+					group.addHost(host);
+					if (hostNameAndVars.length > 1) {
+						addVariables(host, hostNameAndVars[1]);
+					}
+				});
+			});
+
+			childrenBlocks.forEach((name, listOfChildrenNames) -> {
+				AnsibleGroup group = getGroup(name);
+				listOfChildrenNames.forEach(childGroupName -> {
+					final AnsibleGroup childGroup = inventory.getGroup(childGroupName);
+					if (null != childGroup) {
+						group.addSubgroup(childGroup);
+					}
+				});
+			});
+
+			varBlocks.forEach((name, listOfVariables) -> {
+				mergeGroupVariables(name, listOfVariables);
+			});
+
+			return inventory;
+		}
+
+		public void mergeGroupVariables(final String name, final List<String> listOfVariables) {
+			AnsibleGroup group = getGroup(name);
+			listOfVariables.forEach(line -> {
+				addVariable(line, null, group);
+			});
+		}
+
+		private AnsibleGroup getGroup(final String name) {
+			int colonpos = name.indexOf(':');
+			String groupName = name.substring(1, colonpos);
+			AnsibleGroup result = getOrAddGroup(groupName, inventory);
+
+			return result;
+		}
+
+		private void addVariables(AnsibleHost host, final String vars) {
+			List<String> variables = splitVariables(vars);
+
+			variables.forEach(token -> addVariable(token, host, null));
+		}
+
+		protected List<String> splitVariables(final String vars) {
+//			String normalizedVars = getNormalizedText(vars);
+
+			// TODO Define separators only once (used in different locations)
+			final StringTokenizer tokenizer = new StringTokenizer(vars, " \t\r\f", true);
+
+			String tmpToken = null; // we need this "temp token" for whitespace values
+			boolean isValueWithWhitespace = false;
+			String quoteSign = "";
+
+			List<String> variables = new LinkedList<>();
+			while (tokenizer.hasMoreTokens()) {
+				final String token = tokenizer.nextToken();
+
+				if (!isValueWithWhitespace) {
+					tmpToken = null; // reset the tmpToken
+				}
+
+				if (tmpToken == null) {
+					// check for whitespace values enclosed by double quotes
+					if (token.matches(".*?=\\s*\".*")) {
+						tmpToken = token;
+						quoteSign = "\"";
+					}
+					// check for whitespace values enclosed by single quotes
+					else if (token.matches(".*?=\\s*\'.*")) {
+						tmpToken = token;
+						quoteSign = "\'";
+
+					}
+					// in a vars block no quotes are required
+					else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
+						tmpToken = token;
+						quoteSign = "\n";
+					}
+
+					// We are reading a comment
+					if (tmpToken != null && (tmpToken.startsWith(";") || tmpToken.startsWith("#"))) {
+						continue;
+					}
+
+					if (tmpToken != null && !tmpToken.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
+						isValueWithWhitespace = true;
+						continue;
+					}
+				}
+
+				// Have we reached the end of a value containing whitespace? (Or, are we at the end of the file?)
+				if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
+					if (!"\n".equals(token)) {
+						tmpToken += token;
+					}
+					isValueWithWhitespace = false;
+				}
+
+				if (isValueWithWhitespace) {
+					// Append the token to tmpToken
+					if (!"\r".equals(token)) {
+						tmpToken += token;
+					}
+					continue;
+				} else {
+					// Otherwise, assign token to tmpToken
+					if (tmpToken == null) {
+						tmpToken = token;
+					}
+				}
+
+				// Ignore separators
+				if (isSeparatorToken(tmpToken)) {
+					continue;
+				}
+
+				variables.add(tmpToken);
+			}
+			return variables;
+		}
+
+		protected AnsibleInventory of(final String text) {
 			String normalizedText = getNormalizedText(text);
 
 			final StringTokenizer tokenizer = new StringTokenizer(normalizedText, " \t\n\r\f", true);
@@ -182,6 +373,14 @@ public class AnsibleInventoryReader {
 			return token.startsWith("[");
 		}
 
+		private boolean isGroupVarsStartToken(String token) {
+			return token.matches("^\\[\\w+:vars\\]$");
+		}
+
+		private boolean isGroupChildrenStartToken(String token) {
+			return token.matches("^\\[\\w+:children\\]$");
+		}
+
 		private void createNewAnsibleGroup(String token) {
 			host = null;
 			isChildrenBlock = false;
@@ -215,11 +414,25 @@ public class AnsibleInventoryReader {
 			return group;
 		}
 
+		private AnsibleHost getOrAddHost(AnsibleInventory inventory, final String hostName) {
+			AnsibleHost host = inventory.getHost(hostName);
+			if (host == null) {
+				host = new AnsibleHost(hostName);
+				inventory.addHost(host);
+				all.addHost(host);
+			}
+			return host;
+		}
+
 		private boolean isVariableToken(String token) {
 			return token.contains("=");
 		}
 
 		private void addVariable(String token) {
+			addVariable(token, host, isVarsBlock ? group : null);
+		}
+
+		private void addVariable(final String token, final AnsibleHost host, final AnsibleGroup group) {
 			final String[] v = token.split("=", 2);
 			// Replace YAML backslashes escapes
 			final AnsibleVariable variable = new AnsibleVariable(v[0], v[1].replace("\\\\", "\\"));
@@ -228,7 +441,7 @@ public class AnsibleInventoryReader {
 				host.addVariable(variable);
 			}
 
-			if (isVarsBlock && group != null) {
+			if (group != null) {
 				group.addVariable(variable);
 				for (AnsibleGroup s : group.getSubgroups()) {
 					for (AnsibleHost h : s.getHosts()) {
@@ -242,7 +455,6 @@ public class AnsibleInventoryReader {
 				for (AnsibleHost h : group.getHosts()) {
 					h.addVariable(variable);
 				}
-				group.addVariable(variable);
 			}
 		}
 
@@ -268,12 +480,13 @@ public class AnsibleInventoryReader {
 		}
 	}
 
-	protected AnsibleInventory of (final String text) {
+	protected AnsibleInventory of(final String text) {
 		return new AnsibleInventoryFactory().of(text);
 	}
 
-	public static AnsibleInventory read(String text) {
-		return new AnsibleInventoryReader().of(text);
+	public static AnsibleInventory read(final String text) {
+		List<String> textAsList = Arrays.asList(text.split("\\n"));
+		return read(textAsList);
 	}
 
 	public static AnsibleInventory read(final Path inventoryPath) throws IOException {
@@ -283,5 +496,9 @@ public class AnsibleInventoryReader {
 		}
 
 		return read(contentBuilder.toString());
+	}
+
+	public static AnsibleInventory read(final List<String> lines) {
+		return new AnsibleInventoryFactory().of(lines);
 	}
 }
