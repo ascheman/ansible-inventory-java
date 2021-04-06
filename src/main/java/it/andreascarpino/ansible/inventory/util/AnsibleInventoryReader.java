@@ -164,7 +164,7 @@ public class AnsibleInventoryReader {
 			// TODO: Define separators only once (used in different locations)
 			final StringTokenizer tokenizer = new StringTokenizer(vars, " \t\r\f", true);
 
-			String tmpToken = null; // we need this "temp token" for whitespace values
+			StringBuilder tokenBuilder = null; // we need this "temp token" for whitespace values
 			boolean isValueWithWhitespace = false;
 			String quoteSign = "";
 
@@ -173,33 +173,28 @@ public class AnsibleInventoryReader {
 				final String token = tokenizer.nextToken();
 
 				if (!isValueWithWhitespace) {
-					tmpToken = null; // reset the tmpToken
+					tokenBuilder = null; // reset the tmpToken
 				}
 
-				if (tmpToken == null) {
+				if (tokenBuilder == null) {
 					// check for whitespace values enclosed by double quotes
 					if (token.matches(".*?=\\s*\".*")) {
-						tmpToken = token;
+						tokenBuilder = new StringBuilder(token);
 						quoteSign = "\"";
 					}
 					// check for whitespace values enclosed by single quotes
 					else if (token.matches(".*?=\\s*'.*")) {
-						tmpToken = token;
+						tokenBuilder = new StringBuilder(token);
 						quoteSign = "'";
 
 					}
 					// in a vars block no quotes are required
 					else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
-						tmpToken = token;
+						tokenBuilder = new StringBuilder(token);
 						quoteSign = "\n";
 					}
 
-					// We are reading a comment
-					if (tmpToken != null && (tmpToken.startsWith(";") || tmpToken.startsWith("#"))) {
-						continue;
-					}
-
-					if (tmpToken != null && !tmpToken.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
+					if (tokenBuilder != null && !token.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
 						isValueWithWhitespace = true;
 						continue;
 					}
@@ -208,7 +203,7 @@ public class AnsibleInventoryReader {
 				// Have we reached the end of a value containing whitespace? (Or, are we at the end of the file?)
 				if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
 					if (!"\n".equals(token)) {
-						tmpToken += token;
+						tokenBuilder.append(token);
 					}
 					isValueWithWhitespace = false;
 				}
@@ -216,22 +211,22 @@ public class AnsibleInventoryReader {
 				if (isValueWithWhitespace) {
 					// Append the token to tmpToken
 					if (!"\r".equals(token)) {
-						tmpToken += token;
+						tokenBuilder.append(token);
 					}
 					continue;
 				} else {
 					// Otherwise, assign token to tmpToken
-					if (tmpToken == null) {
-						tmpToken = token;
+					if (tokenBuilder == null) {
+						tokenBuilder = new StringBuilder(token);
 					}
 				}
 
 				// Ignore separators
-				if (isSeparatorToken(tmpToken)) {
+				if (isSeparatorToken(token)) {
 					continue;
 				}
 
-				variables.add(tmpToken);
+				variables.add(tokenBuilder.toString());
 			}
 			return variables;
 		}
