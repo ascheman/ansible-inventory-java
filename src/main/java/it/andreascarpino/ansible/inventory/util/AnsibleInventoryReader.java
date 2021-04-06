@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * @author Andrea Scarpino
@@ -59,17 +58,14 @@ public class AnsibleInventoryReader {
 			inventory.addGroup(ungrouped);
 		}
 
-		AnsibleGroup group = null;
-		AnsibleHost host = null;
-		boolean isVarsBlock = false;
-		boolean isChildrenBlock = false;
-
-		Map<String, List<String>> groupBlocks = new HashMap<>();
-		Map<String, List<String>> varBlocks = new HashMap<>();
-		Map<String, List<String>> childrenBlocks = new HashMap<>();
+		final Map<String, List<String>> groupBlocks = new HashMap<>();
+		final Map<String, List<String>> varBlocks = new HashMap<>();
+		final Map<String, List<String>> childrenBlocks = new HashMap<>();
 		List<String> currentLines = new ArrayList<>();
 		String currentName = "ungrouped";
 		boolean isGroupBlock = true;
+		boolean isVarsBlock = false;
+		boolean isChildrenBlock = false;
 
 		private void finishCurrentLines(final String line) {
 			if (isVarsBlock) {
@@ -158,13 +154,13 @@ public class AnsibleInventoryReader {
 			return getOrAddGroup(groupName, inventory);
 		}
 
-		private void addVariables(AnsibleHost host, final String vars) {
-			List<String> variables = splitVariables(vars);
+		private void addVariables(final AnsibleHost host, final String vars) {
+			List<String> variables = splitVariables(vars, isVarsBlock);
 
 			variables.forEach(token -> addVariable(token, host, null));
 		}
 
-		protected List<String> splitVariables(final String vars) {
+		protected List<String> splitVariables(final String vars, final boolean isVarsBlock) {
 			// TODO: Define separators only once (used in different locations)
 			final StringTokenizer tokenizer = new StringTokenizer(vars, " \t\r\f", true);
 
@@ -247,27 +243,27 @@ public class AnsibleInventoryReader {
 			return m.replaceAll("$1=$2");
 		}
 
-		private boolean isSeparatorToken(String token) {
+		private boolean isSeparatorToken(final String token) {
 			return " ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token);
 		}
 
-		private boolean isCommentToken(String token) {
+		private boolean isCommentToken(final String token) {
 			return token.startsWith(";") || token.startsWith("#");
 		}
 
-		private boolean isGroupStartToken(String token) {
+		private boolean isGroupStartToken(final String token) {
 			return token.startsWith("[");
 		}
 
-		private boolean isGroupVarsStartToken(String token) {
+		private boolean isGroupVarsStartToken(final String token) {
 			return token.matches("^\\[\\w+:vars]$");
 		}
 
-		private boolean isGroupChildrenStartToken(String token) {
+		private boolean isGroupChildrenStartToken(final String token) {
 			return token.matches("^\\[\\w+:children]$");
 		}
 
-		private static AnsibleGroup getOrAddGroup(String groupName, AnsibleInventory inventory) {
+		private static AnsibleGroup getOrAddGroup(final String groupName, final AnsibleInventory inventory) {
 			AnsibleGroup group = inventory.getGroup(groupName);
 			if (group == null) {
 				group = new AnsibleGroup(groupName);
@@ -276,7 +272,7 @@ public class AnsibleInventoryReader {
 			return group;
 		}
 
-		private AnsibleHost getOrAddHost(AnsibleInventory inventory, final String hostName) {
+		private AnsibleHost getOrAddHost(final AnsibleInventory inventory, final String hostName) {
 			AnsibleHost currentHost = inventory.getHost(hostName);
 			if (currentHost == null) {
 				currentHost = new AnsibleHost(hostName);
