@@ -240,116 +240,11 @@ public class AnsibleInventoryReader {
 			return variables;
 		}
 
-		protected AnsibleInventory of(final String text) {
-			String normalizedText = getNormalizedText(text);
-
-			final StringTokenizer tokenizer = new StringTokenizer(normalizedText, " \t\n\r\f", true);
-
-			boolean skipComment = false;
-			String tmpToken = null; // we need this "temp token" for whitespace values
-			boolean isValueWithWhitespace = false;
-			String quoteSign = "";
-
-			while (tokenizer.hasMoreTokens()) {
-				final String token = tokenizer.nextToken();
-
-				if (!isValueWithWhitespace) {
-					tmpToken = null; // reset the tmpToken
-				}
-
-				if (tmpToken == null) {
-					// check for whitespace values enclosed by double quotes
-					if (token.matches(".*?=\\s*\".*")) {
-						tmpToken = token;
-						quoteSign = "\"";
-					}
-					// check for whitespace values enclosed by single quotes
-					else if (token.matches(".*?=\\s*'.*")) {
-						tmpToken = token;
-						quoteSign = "'";
-
-					}
-					// in a vars block no quotes are required
-					else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
-						tmpToken = token;
-						quoteSign = "\n";
-					}
-
-					// We are reading a comment
-					if (tmpToken != null && (tmpToken.startsWith(";") || tmpToken.startsWith("#"))) {
-						continue;
-					}
-
-					if (tmpToken != null && !tmpToken.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
-						isValueWithWhitespace = true;
-						continue;
-					}
-				}
-
-				// Have we reached the end of a value containing whitespace? (Or, are we at the end of the file?)
-				if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
-					if (!"\n".equals(token)) {
-						tmpToken += token;
-					}
-					isValueWithWhitespace = false;
-				}
-
-				if (isValueWithWhitespace) {
-					// Append the token to tmpToken
-					if (! "\r".equals(token)) {
-						tmpToken += token;
-					}
-					continue;
-				} else {
-					// Otherwise, assign token to tmpToken
-					if (tmpToken == null) {
-						tmpToken = token;
-					}
-				}
-
-				// New line, reset the comment flag
-				if (isNewlineToken(tmpToken)) {
-					skipComment = false;
-					continue;
-				}
-
-				// We are still reading a comment line
-				if (skipComment) {
-					continue;
-				}
-
-				// Ignore separators
-				if (isSeparatorToken(tmpToken)) {
-					continue;
-				}
-
-				// We are reading a comment
-				if (isCommentToken(tmpToken)) {
-					skipComment = true;
-					continue;
-				}
-
-				if (isGroupStartToken(tmpToken)) {
-					createNewAnsibleGroup(tmpToken);
-				} else if (isVariableToken(tmpToken)) {
-					addVariable(tmpToken);
-				} else {
-					addHost(tmpToken);
-				}
-			}
-
-			return inventory;
-		}
-
 		private String getNormalizedText(final String text) {
 			// Convert "foo = bar" to "foo=bar" (as Ansible allows to use that format but it would cause problems here)
 			Pattern p = Pattern.compile("^(\\S*)\\s*=\\s*(.*)$", Pattern.MULTILINE);
 			Matcher m = p.matcher(text);
 			return m.replaceAll("$1=$2");
-		}
-
-		private boolean isNewlineToken(String token) {
-			return "\n".equals(token);
 		}
 
 		private boolean isSeparatorToken(String token) {
@@ -372,30 +267,6 @@ public class AnsibleInventoryReader {
 			return token.matches("^\\[\\w+:children]$");
 		}
 
-		private void createNewAnsibleGroup(String token) {
-			host = null;
-			isChildrenBlock = false;
-			isVarsBlock = false;
-
-			String groupName = token.replaceAll("^\\[", "").replaceAll("]$", "");
-
-			if (groupName.contains(":")) {
-				final String[] g = groupName.split(":");
-
-				groupName = g[0];
-
-				if ("vars".equals(g[1])) {
-					isVarsBlock = true;
-					group = getOrAddGroup(groupName, inventory);
-				} else if ("children".equals(g[1])) {
-					isChildrenBlock = true;
-					group = getOrAddGroup(groupName, inventory);
-				}
-			} else {
-				group = getOrAddGroup(groupName, inventory);
-			}
-		}
-
 		private static AnsibleGroup getOrAddGroup(String groupName, AnsibleInventory inventory) {
 			AnsibleGroup group = inventory.getGroup(groupName);
 			if (group == null) {
@@ -413,14 +284,6 @@ public class AnsibleInventoryReader {
 				all.addHost(currentHost);
 			}
 			return currentHost;
-		}
-
-		private boolean isVariableToken(String token) {
-			return token.contains("=");
-		}
-
-		private void addVariable(String token) {
-			addVariable(token, host, isVarsBlock ? group : null);
 		}
 
 		private void addVariable(final String token, final AnsibleHost host, final AnsibleGroup group) {
@@ -448,31 +311,6 @@ public class AnsibleInventoryReader {
 				}
 			}
 		}
-
-		private void addHost(String token) {
-			if (group == null) {
-				host = new AnsibleHost(token);
-				inventory.addHost(host);
-				all.addHost(host);
-				ungrouped.addHost(host);
-			} else if (isChildrenBlock) {
-				final AnsibleGroup g = inventory.getGroup(token);
-				if (g != null) {
-					group.addSubgroup(g);
-				} else {
-					group.addSubgroup(new AnsibleGroup(token));
-				}
-			} else {
-				host = new AnsibleHost(token);
-				inventory.addHost(host);
-				all.addHost(host);
-				group.addHost(host);
-			}
-		}
-	}
-
-	protected AnsibleInventory of(final String text) {
-		return new AnsibleInventoryFactory().of(text);
 	}
 
 	public static AnsibleInventory read(final String text) {
@@ -481,12 +319,8 @@ public class AnsibleInventoryReader {
 	}
 
 	public static AnsibleInventory read(final Path inventoryPath) throws IOException {
-		StringBuilder contentBuilder = new StringBuilder();
-		try (Stream<String> stream = Files.lines(inventoryPath, StandardCharsets.UTF_8)) {
-			stream.forEach(s -> contentBuilder.append(s).append("\n"));
-		}
-
-		return read(contentBuilder.toString());
+		List<String> inventoryAsList = Files.readAllLines(inventoryPath, StandardCharsets.UTF_8);
+		return read(inventoryAsList);
 	}
 
 	public static AnsibleInventory read(final List<String> lines) {
