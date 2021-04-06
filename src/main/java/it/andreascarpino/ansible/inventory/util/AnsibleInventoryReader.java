@@ -117,7 +117,7 @@ public class AnsibleInventoryReader {
 			finishCurrentLines(null);
 
 			groupBlocks.forEach((name, listOfHostnamesWithVars) -> {
-				AnsibleGroup currentGroup = getOrAddGroup(name, inventory);
+				AnsibleGroup currentGroup = getOrAddGroup(inventory, name);
 				listOfHostnamesWithVars.forEach(line -> {
 					final String[] hostNameAndVars = line.split("[ \t]", 2);
 					AnsibleHost currentHost = getOrAddHost(inventory, hostNameAndVars[0]);
@@ -151,7 +151,7 @@ public class AnsibleInventoryReader {
 		private AnsibleGroup getGroup(final String name) {
 			int colonPosition = name.indexOf(':');
 			String groupName = name.substring(1, colonPosition);
-			return getOrAddGroup(groupName, inventory);
+			return getOrAddGroup(inventory, groupName);
 		}
 
 		private void addVariables(final AnsibleHost host, final String vars) {
@@ -263,7 +263,7 @@ public class AnsibleInventoryReader {
 			return token.matches("^\\[\\w+:children]$");
 		}
 
-		private static AnsibleGroup getOrAddGroup(final String groupName, final AnsibleInventory inventory) {
+		private static AnsibleGroup getOrAddGroup(final AnsibleInventory inventory, final String groupName) {
 			AnsibleGroup group = inventory.getGroup(groupName);
 			if (group == null) {
 				group = new AnsibleGroup(groupName);
