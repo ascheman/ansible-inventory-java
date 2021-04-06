@@ -44,9 +44,98 @@ public class AnsibleInventoryReader {
 	private AnsibleInventoryReader() {
 	}
 
-	protected static class AnsibleInventoryFactory {
+	protected static class AnsibleVariableSplitter {
 		private static final String DELIMITERS = " \t\r\f";
 
+		StringBuilder tokenBuilder = null; // we need this "temp token" for whitespace values
+		boolean isValueWithWhitespace = false;
+		String quoteSign = "";
+
+		List<String> split(final String vars, final boolean isVarsBlock) {
+			final StringTokenizer tokenizer = new StringTokenizer(vars, DELIMITERS, true);
+			List<String> variables = new LinkedList<>();
+			while (tokenizer.hasMoreTokens()) {
+				final String token = tokenizer.nextToken();
+
+				resetTokenBuilderUnlessWithinWhitespace();
+
+				if (isNewTokenWithOpenQuote(isVarsBlock, token)) {
+					continue;
+				}
+				handlePossibleEndOfQuote(tokenizer, token);
+				if (isValueWithWhiteSpaceOrNewToken(token)) {
+					continue;
+				}
+				// Ignore separators
+				if (isSeparatorToken(token)) {
+					continue;
+				}
+				variables.add(tokenBuilder.toString());
+			}
+			return variables;
+		}
+
+		private boolean isValueWithWhiteSpaceOrNewToken(String token) {
+			if (isValueWithWhitespace) {
+				// Append the token to tokenBuilder
+				tokenBuilder.append(token);
+				return true;
+			} else {
+				// Otherwise, assign token to tokenBuilder
+				if (tokenBuilder == null) {
+					tokenBuilder = new StringBuilder(token);
+				}
+			}
+			return false;
+		}
+
+		private boolean isNewTokenWithOpenQuote(final boolean isVarsBlock, final String token) {
+			if (tokenBuilder == null) {
+				// check for whitespace values enclosed by double quotes
+				if (token.matches(".*?=\\s*\".*")) {
+					tokenBuilder = new StringBuilder(token);
+					quoteSign = "\"";
+				}
+				// check for whitespace values enclosed by single quotes
+				else if (token.matches(".*?=\\s*'.*")) {
+					tokenBuilder = new StringBuilder(token);
+					quoteSign = "'";
+
+				}
+				// in a vars block no quotes are required
+				else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
+					tokenBuilder = new StringBuilder(token);
+					quoteSign = "\n";
+				}
+
+				if (tokenBuilder != null && !token.endsWith(quoteSign)) {
+					isValueWithWhitespace = true;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private void handlePossibleEndOfQuote(final StringTokenizer tokenizer, final String token) {
+			// Have we reached the end of a value containing whitespace? (Or, are we at the end of the String?)
+			if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
+				tokenBuilder.append(token);
+				isValueWithWhitespace = false;
+			}
+		}
+
+		private void resetTokenBuilderUnlessWithinWhitespace() {
+			if (!isValueWithWhitespace) {
+				tokenBuilder = null;
+			}
+		}
+
+		private static boolean isSeparatorToken(final String token) {
+			return token.matches("[" + DELIMITERS + "]");
+		}
+	}
+
+	protected static class AnsibleInventoryFactory {
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
@@ -163,73 +252,7 @@ public class AnsibleInventoryReader {
 		}
 
 		protected List<String> splitVariables(final String vars, final boolean isVarsBlock) {
-			final StringTokenizer tokenizer = new StringTokenizer(vars, DELIMITERS, true);
-
-			StringBuilder tokenBuilder = null; // we need this "temp token" for whitespace values
-			boolean isValueWithWhitespace = false;
-			String quoteSign = "";
-
-			List<String> variables = new LinkedList<>();
-			while (tokenizer.hasMoreTokens()) {
-				final String token = tokenizer.nextToken();
-
-				if (!isValueWithWhitespace) {
-					tokenBuilder = null; // reset the tmpToken
-				}
-
-				if (tokenBuilder == null) {
-					// check for whitespace values enclosed by double quotes
-					if (token.matches(".*?=\\s*\".*")) {
-						tokenBuilder = new StringBuilder(token);
-						quoteSign = "\"";
-					}
-					// check for whitespace values enclosed by single quotes
-					else if (token.matches(".*?=\\s*'.*")) {
-						tokenBuilder = new StringBuilder(token);
-						quoteSign = "'";
-
-					}
-					// in a vars block no quotes are required
-					else if (token.matches("\\S*=\\s*.*") && isVarsBlock) {
-						tokenBuilder = new StringBuilder(token);
-						quoteSign = "\n";
-					}
-
-					if (tokenBuilder != null && !token.endsWith(quoteSign) && tokenizer.hasMoreTokens()) {
-						isValueWithWhitespace = true;
-						continue;
-					}
-				}
-
-				// Have we reached the end of a value containing whitespace? (Or, are we at the end of the file?)
-				if (isValueWithWhitespace && (token.endsWith(quoteSign) || !tokenizer.hasMoreTokens())) {
-					if (!"\n".equals(token)) {
-						tokenBuilder.append(token);
-					}
-					isValueWithWhitespace = false;
-				}
-
-				if (isValueWithWhitespace) {
-					// Append the token to tmpToken
-					if (!"\r".equals(token)) {
-						tokenBuilder.append(token);
-					}
-					continue;
-				} else {
-					// Otherwise, assign token to tmpToken
-					if (tokenBuilder == null) {
-						tokenBuilder = new StringBuilder(token);
-					}
-				}
-
-				// Ignore separators
-				if (isSeparatorToken(token)) {
-					continue;
-				}
-
-				variables.add(tokenBuilder.toString());
-			}
-			return variables;
+			return new AnsibleVariableSplitter().split(vars, isVarsBlock);
 		}
 
 		private String getNormalizedText(final String text) {
@@ -237,10 +260,6 @@ public class AnsibleInventoryReader {
 			Pattern p = Pattern.compile("^(\\S*)\\s*=\\s*(.*)$", Pattern.MULTILINE);
 			Matcher m = p.matcher(text);
 			return m.replaceAll("$1=$2");
-		}
-
-		private boolean isSeparatorToken(final String token) {
-			return token.matches("[" + DELIMITERS + "]");
 		}
 
 		private boolean isCommentToken(final String token) {
