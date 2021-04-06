@@ -2,9 +2,9 @@ name: Build Maven Project
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop, feature/**, fix/** ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   build:
