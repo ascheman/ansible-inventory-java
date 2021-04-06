@@ -15,16 +15,16 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package it.andreascarpino.ansible.inventory;
+package net.aschemann.ansible.inventory;
 
+import net.aschemann.ansible.inventory.type.AnsibleHost;
+import net.aschemann.ansible.inventory.type.AnsibleVariable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import it.andreascarpino.ansible.inventory.type.AnsibleGroup;
-import it.andreascarpino.ansible.inventory.type.AnsibleHost;
-import it.andreascarpino.ansible.inventory.type.AnsibleInventory;
-import it.andreascarpino.ansible.inventory.type.AnsibleVariable;
-import it.andreascarpino.ansible.inventory.util.AnsibleInventoryWriter;
+import net.aschemann.ansible.inventory.type.AnsibleGroup;
+import net.aschemann.ansible.inventory.type.AnsibleInventory;
+import net.aschemann.ansible.inventory.util.AnsibleInventoryWriter;
 
 /**
  * @author Andrea Scarpino

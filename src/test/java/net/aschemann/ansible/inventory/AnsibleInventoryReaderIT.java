@@ -1,7 +1,7 @@
-package it.andreascarpino.ansible.inventory;
+package net.aschemann.ansible.inventory;
 
-import it.andreascarpino.ansible.inventory.type.AnsibleInventory;
-import it.andreascarpino.ansible.inventory.util.AnsibleInventoryReader;
+import net.aschemann.ansible.inventory.type.AnsibleInventory;
+import net.aschemann.ansible.inventory.util.AnsibleInventoryReader;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -15,12 +15,12 @@
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package it.andreascarpino.ansible.inventory.util;
+package net.aschemann.ansible.inventory.util;
 
-import it.andreascarpino.ansible.inventory.type.AnsibleGroup;
-import it.andreascarpino.ansible.inventory.type.AnsibleHost;
-import it.andreascarpino.ansible.inventory.type.AnsibleInventory;
-import it.andreascarpino.ansible.inventory.type.AnsibleVariable;
+import net.aschemann.ansible.inventory.type.AnsibleGroup;
+import net.aschemann.ansible.inventory.type.AnsibleHost;
+import net.aschemann.ansible.inventory.type.AnsibleInventory;
+import net.aschemann.ansible.inventory.type.AnsibleVariable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
