@@ -45,6 +45,8 @@ public class AnsibleInventoryReader {
 	}
 
 	protected static class AnsibleInventoryFactory {
+		private static final String DELIMITERS = " \t\r\f";
+
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
@@ -161,8 +163,7 @@ public class AnsibleInventoryReader {
 		}
 
 		protected List<String> splitVariables(final String vars, final boolean isVarsBlock) {
-			// TODO: Define separators only once (used in different locations)
-			final StringTokenizer tokenizer = new StringTokenizer(vars, " \t\r\f", true);
+			final StringTokenizer tokenizer = new StringTokenizer(vars, DELIMITERS, true);
 
 			StringBuilder tokenBuilder = null; // we need this "temp token" for whitespace values
 			boolean isValueWithWhitespace = false;
@@ -239,7 +240,7 @@ public class AnsibleInventoryReader {
 		}
 
 		private boolean isSeparatorToken(final String token) {
-			return " ".equals(token) || "\t".equals(token) || "\r".equals(token) || "\f".equals(token);
+			return token.matches("[" + DELIMITERS + "]");
 		}
 
 		private boolean isCommentToken(final String token) {
