@@ -36,6 +36,18 @@
 		<url>https://gitlab.com/ascheman/ansible-inventory-java.git</url>
 	</scm>
 
+	<distributionManagement>
+		<repository>
+			<id>oss.sonatype.org</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/${env.GITHUB_ACTOR}/ansible-inventory-java</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<build>
 		<plugins>
 			<plugin>
