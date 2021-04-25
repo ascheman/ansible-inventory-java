@@ -137,24 +137,26 @@ public class AnsibleInventoryReader {
 	}
 
 	protected static class AnsibleInventoryFactory {
+		private static final String UNGROUPED = "ungrouped";
+
 		final AnsibleInventory inventory = new AnsibleInventory();
 		// "all" is the default group which is always present and contains all hosts,
 		// cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
 		private final AnsibleGroup all = new AnsibleGroup("all");
-		// "ungrouped" is the default group which is always present and contains hosts which do not belong to any
-		//other group, cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
-		private final AnsibleGroup ungrouped = new AnsibleGroup("ungrouped");
 
 		protected AnsibleInventoryFactory() {
 			inventory.addGroup(all);
-			inventory.addGroup(ungrouped);
+			// "ungrouped" is the default group which is always present and contains hosts which do not belong to any
+			// other group, cf. https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#default-groups
+			inventory.addGroup(new AnsibleGroup(UNGROUPED));
 		}
 
 		final Map<String, List<String>> groupBlocks = new HashMap<>();
 		final Map<String, List<String>> varBlocks = new HashMap<>();
 		final Map<String, List<String>> childrenBlocks = new HashMap<>();
 		List<String> currentLines = new ArrayList<>();
-		String currentName = "ungrouped";
+		// Unless a first group is explicitely created in the hosts file use the UNGROUPED group
+		String currentName = UNGROUPED;
 		boolean isGroupBlock = true;
 		boolean isVarsBlock = false;
 		boolean isChildrenBlock = false;
