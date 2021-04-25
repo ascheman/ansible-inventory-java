@@ -22,4 +22,4 @@ jobs:
         # TODO make sure we distinguish versions by branches for deployment
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./mvnw -s $GITHUB_WORKSPACE/settings.xml -B clean --no-transfer-progress deploy
+        run: ./mvnw -X -s $GITHUB_WORKSPACE/settings.xml -B clean --no-transfer-progress deploy
