@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -17,5 +16,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Build with Maven Wrapper
-        run: ./mvnw clean verify
+      - name: Build and deploy with Maven Wrapper
+        # TODO make sure we distinguish versions by branches for deployment
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: ./mvnw -B clean --no-transfer-progress deploy
