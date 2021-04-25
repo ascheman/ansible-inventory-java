@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -330,6 +331,13 @@ public class AnsibleInventoryReader {
 	}
 
 	public static AnsibleInventory read(final Path inventoryPath) throws IOException {
+		if (Files.isDirectory(inventoryPath)) {
+			return getAnsibleInventoryFromFile(Paths.get(inventoryPath.toString(), "hosts"));
+		}
+		return getAnsibleInventoryFromFile(inventoryPath);
+	}
+
+	private static AnsibleInventory getAnsibleInventoryFromFile(final Path inventoryPath) throws IOException {
 		List<String> inventoryAsList = Files.readAllLines(inventoryPath, StandardCharsets.UTF_8);
 		return read(inventoryAsList);
 	}
