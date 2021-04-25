@@ -76,7 +76,7 @@ public class AnsibleHost {
 
 	/**
 	 * @deprecated
-	 * @param variableName
+	 * @param variableName the name of the variable to be removed
 	 */
 	@Deprecated
 	public void removeVariable(String variableName) {
