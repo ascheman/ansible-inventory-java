@@ -1,0 +1,20 @@
+# Ungrouped host
+192.168.2.1
+
+; Taken from https://github.com/geerlingguy/ansible-for-devops/blob/master/lamp-infrastructure/inventories/vagrant/inventory
+[lamp_varnish]
+192.168.2.2
+
+[lamp_www]
+192.168.2.3
+192.168.2.4
+
+[a4d_lamp_db_1]
+192.168.2.5
+
+[lamp_db]
+192.168.2.5
+192.168.2.6
+
+[lamp_memcached]
+192.168.2.7

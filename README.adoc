@@ -3,9 +3,25 @@
 image:https://app.fossa.io/api/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java.svg?type=shield[FOSSA Status,link=https://app.fossa.io/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java?ref=badge_shield]
 image:https://gitlab.com/ascheman/ansible-inventory-java/badges/master/pipeline.svg[Build Status,link=https://gitlab.com/ascheman/ansible-inventory-java/pipelines]
 
+[.lead]
+====
 This code is a Java library to read and write https://www.ansible.com/[Ansible] https://docs.ansible.com/ansible/intro_inventory.html[static inventories].
-It is a fork of https://gitlab.com/ilpianista/ansible-inventory-java/ / https://github.com/ilpianista/ansible-inventory-java/ - thanks to https://gitlab.com/ilpianista[@ilpianista] for the the great work so far.
+It is a fork of https://gitlab.com/ilpianista/ansible-inventory-java/ / https://github.com/ilpianista/ansible-inventory-java/ - thanks to https://gitlab.com/ilpianista[@ilpianista] for the great work so far.
 Most changes from https://github.com/infonova/ansible-inventory-java/ (improvements + fixes) up to the start of https://github.com/infonova/ansible-inventory-java/commit/b19bf3574a96c9a6975e3fffa270787a68ed374e[version 1.2-SNAPSHOT] were also incorporated - thanks to https://github.com/rawbertp[@rawbertp].
+====
+
+[CAUTION]
+====
+This code does not cover all possibilities to define an Ansible inventory.
+For example, it does not allow to
+
+* Define complex variables,
+* Make full use of https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yaml_inventory.html[YAML] or https://docs.ansible.com/ansible/latest/collections/ansible/builtin/toml_inventory.html[TOML] based inventories,
+* Use `groups_vars/` or `host_vars/` directory definitions.
+
+If possible the library will log a warning if it detects such a situation but parsing Ansible inventories is a hard task and the parser may not even detect configurations beyond its capabilities.
+Contributions to improve this are greatly appreciated!
+====
 
 == Build
 
