@@ -16,8 +16,8 @@ public class AnsibleInventoryReaderIT {
     public static final String DIGITALOCEAN_INVENTORY_PATH = "src/test/resources/inventories/digitalocean-inventory";
     public static final String KUBERNETES_INVENTORY_PATH = "src/test/resources/inventories/kubernetes-inventory";
     public static final String VAGRANT_INVENTORY_FILE_PATH = "src/test/resources/inventories/vagrant-inventory";
-    public static final String VAGRANT_INVENTORY_DIRECTORY_PATH = "src/test/resources/inventories/directories/vagrant"
-            + "-inventory";
+    public static final String VAGRANT_INVENTORY_DIRECTORY_PATH
+            = "src/test/resources/inventories/directories/vagrant-inventory";
 
     @Test
     public void readVagrantInventoryDirectory() throws IOException {
@@ -28,7 +28,8 @@ public class AnsibleInventoryReaderIT {
 
     @Test
     public void readVagrantInventoryLines() throws IOException {
-        final List<String> lines = Files.readAllLines(Paths.get(VAGRANT_INVENTORY_FILE_PATH).toAbsolutePath(), StandardCharsets.UTF_8);
+        final List<String> lines
+                = Files.readAllLines(Paths.get(VAGRANT_INVENTORY_FILE_PATH).toAbsolutePath(), StandardCharsets.UTF_8);
         AnsibleInventory ansibleInventory =
                 AnsibleInventoryReader.read(lines);
         testVagrantInventory(ansibleInventory);

@@ -18,6 +18,8 @@
 		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
 		<commons-lang3.version>3.12.0</commons-lang3.version>
 		<junit.version>4.13.2</junit.version>
+		<snakeyaml.version>1.27</snakeyaml.version>
+		<log4j.version>2.14.1</log4j.version>
 	</properties>
 
 	<name>Ansible Inventory Java</name>
@@ -111,6 +113,22 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>${commons-lang3.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>${snakeyaml.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
