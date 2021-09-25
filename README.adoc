@@ -1,7 +1,9 @@
 = ansible-inventory-java
 
 image:https://app.fossa.io/api/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java.svg?type=shield[FOSSA Status,link=https://app.fossa.io/projects/git%2Bgithub.com%2Fascheman%2Fansible-inventory-java?ref=badge_shield]
-image:https://gitlab.com/ascheman/ansible-inventory-java/badges/master/pipeline.svg[Build Status,link=https://gitlab.com/ascheman/ansible-inventory-java/pipelines]
+image:https://gitlab.com/ascheman/ansible-inventory-java/badges/develop/pipeline.svg[Build Status,link=https://gitlab.com/ascheman/ansible-inventory-java/pipelines]
+image:https://github.com/ascheman/ansible-inventory-java/actions/workflows/default-build.yml/badge.svg[https://github.com/ascheman/ansible-inventory-java/actions]
+
 
 [.lead]
 ====
