@@ -30,3 +30,6 @@ buildNumber.properties
 .settings/
 .classpath
 .project
+
+# Direnv
+.envrc
