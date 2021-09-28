@@ -24,4 +24,4 @@ jobs:
         # TODO make sure we distinguish versions by branches for deployment
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./mvnw -s $GITHUB_WORKSPACE/settings.xml -B clean deploy -P github
+        run: ./mvnw -s $GITHUB_WORKSPACE/settings.xml -B clean deploy

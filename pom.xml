@@ -157,6 +157,11 @@
 	<profiles>
 		<profile>
 			<id>github</id>
+			<activation>
+				<property>
+					<name>env.GITHUB_TOKEN</name>
+				</property>
+			</activation>
 			<distributionManagement>
 				<snapshotRepository>
 					<id>github</id>
