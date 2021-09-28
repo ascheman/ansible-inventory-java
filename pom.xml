@@ -12,12 +12,15 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 
+		<oss.sonatype.org.url>https://oss.sonatype.org</oss.sonatype.org.url>
+
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
 		<maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
 		<maven-source-plugin.version>3.2.1</maven-source-plugin.version>
 		<commons-lang3.version>3.12.0</commons-lang3.version>
 		<junit.version>4.13.2</junit.version>
+		<nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
 		<snakeyaml.version>1.29</snakeyaml.version>
 		<log4j.version>2.14.1</log4j.version>
 	</properties>
@@ -40,13 +43,14 @@
 
 	<distributionManagement>
 		<repository>
-			<id>oss.sonatype.org</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>ossrh</id>
+			<url>${oss.sonatype.org.url}/service/local/staging/deploy/maven2/</url>
+			<layout>default</layout>
 		</repository>
 		<snapshotRepository>
-			<id>github</id>
-			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/${env.GITHUB_ACTOR}/ansible-inventory-java</url>
+			<id>ossrh</id>
+			<url>${oss.sonatype.org.url}/content/repositories/snapshots/</url>
+			<layout>default</layout>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -105,6 +109,18 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${nexus-staging-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>${oss.sonatype.org.url}/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -137,5 +153,18 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>github</id>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>github</id>
+					<name>GitHub Packages</name>
+					<url>https://maven.pkg.github.com/${env.GITHUB_ACTOR}/ansible-inventory-java</url>
+				</snapshotRepository>
+			</distributionManagement>
+		</profile>
+	</profiles>
 
 </project>
