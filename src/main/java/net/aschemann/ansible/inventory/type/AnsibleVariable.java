@@ -23,12 +23,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Andrea Scarpino
  * @see AnsibleConstants
  */
 public class AnsibleVariable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnsibleVariable.class);
 
 	private String name;
 
@@ -138,7 +142,7 @@ public class AnsibleVariable {
                 buf.append(", ");
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 // Silently ignore errors
-                e.printStackTrace();
+                LOGGER.warn("Could not map objToString for Field of class '{}'", f.getClass(), e);
             }
         }
         buf.replace(buf.length() - 2, buf.length(), "");
