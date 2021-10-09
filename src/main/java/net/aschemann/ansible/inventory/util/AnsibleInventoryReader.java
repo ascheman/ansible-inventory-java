@@ -21,8 +21,8 @@ import net.aschemann.ansible.inventory.type.AnsibleGroup;
 import net.aschemann.ansible.inventory.type.AnsibleHost;
 import net.aschemann.ansible.inventory.type.AnsibleInventory;
 import net.aschemann.ansible.inventory.type.AnsibleVariable;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  */
 public class AnsibleInventoryReader {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnsibleInventoryReader.class);
 
     private AnsibleInventoryReader() {
     }
@@ -76,7 +76,7 @@ public class AnsibleInventoryReader {
                     Map<String, Object> obj = yaml.load(inputStream);
                     obj.forEach((key, value) -> {
                         if (!(value instanceof String)) {
-                            logger.warn("Cannot add complex value with key '{}' to group '{}'",
+                            LOGGER.warn("Cannot add complex value with key '{}' to group '{}'",
                                     key, ansibleGroup.getName());
                         } else {
                             AnsibleVariable variable = new AnsibleVariable(key, value);
@@ -84,7 +84,7 @@ public class AnsibleInventoryReader {
                         }
                     });
                 } catch (FileNotFoundException e) {
-                    logger.error("For some reason the group_vars file '{}' cannot be read",
+                    LOGGER.error("For some reason the group_vars file '{}' cannot be read",
                             groupVarsFilePath.toAbsolutePath(), e);
                 }
             }
@@ -102,7 +102,7 @@ public class AnsibleInventoryReader {
                     Map<String, Object> obj = yaml.load(inputStream);
                     obj.forEach((key, value) -> {
                         if (!(value instanceof String)) {
-                            logger.warn("Cannot add complex value with key '{}' to host '{}'",
+                            LOGGER.warn("Cannot add complex value with key '{}' to host '{}'",
                                     key, ansibleHost.getName());
                         } else {
                             AnsibleVariable variable = new AnsibleVariable(key, value);
@@ -110,7 +110,7 @@ public class AnsibleInventoryReader {
                         }
                     });
                 } catch (FileNotFoundException e) {
-                    logger.error("For some reason the host_vars file '{}' cannot be read",
+                    LOGGER.error("For some reason the host_vars file '{}' cannot be read",
                             hostVarsFilePath.toAbsolutePath(), e);
                 }
             }

@@ -16,12 +16,13 @@
 
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <junit.version>4.13.2</junit.version>
-        <log4j.version>2.14.1</log4j.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
+        <slf4j-api.version>1.7.30</slf4j-api.version>
+        <slf4j-simple.version>1.7.27</slf4j-simple.version>
         <snakeyaml.version>1.29</snakeyaml.version>
     </properties>
 
@@ -131,15 +132,9 @@
             <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-            <optional>true</optional>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
@@ -150,6 +145,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j-simple.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
