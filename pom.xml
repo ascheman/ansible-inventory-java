@@ -20,10 +20,10 @@
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <slf4j-api.version>1.7.30</slf4j-api.version>
-        <slf4j-simple.version>1.7.27</slf4j-simple.version>
-        <snakeyaml.version>1.29</snakeyaml.version>
+        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+        <slf4j-api.version>1.7.36</slf4j-api.version>
+        <slf4j-simple.version>1.7.36</slf4j-simple.version>
+        <snakeyaml.version>1.30</snakeyaml.version>
     </properties>
 
     <name>Ansible Inventory Java</name>
