@@ -17,14 +17,14 @@
  */
 package net.aschemann.ansible.inventory.type;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.lang3.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Andrea Scarpino

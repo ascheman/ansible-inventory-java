@@ -17,14 +17,14 @@
  */
 package net.aschemann.ansible.inventory.util;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Collection;
-
 import net.aschemann.ansible.inventory.type.AnsibleGroup;
 import net.aschemann.ansible.inventory.type.AnsibleHost;
 import net.aschemann.ansible.inventory.type.AnsibleInventory;
 import net.aschemann.ansible.inventory.type.AnsibleVariable;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Collection;
 
 /**
  * @author Andrea Scarpino

@@ -17,14 +17,13 @@
  */
 package net.aschemann.ansible.inventory;
 
+import net.aschemann.ansible.inventory.type.AnsibleGroup;
 import net.aschemann.ansible.inventory.type.AnsibleHost;
+import net.aschemann.ansible.inventory.type.AnsibleInventory;
 import net.aschemann.ansible.inventory.type.AnsibleVariable;
+import net.aschemann.ansible.inventory.util.AnsibleInventoryWriter;
 import org.junit.Assert;
 import org.junit.Test;
-
-import net.aschemann.ansible.inventory.type.AnsibleGroup;
-import net.aschemann.ansible.inventory.type.AnsibleInventory;
-import net.aschemann.ansible.inventory.util.AnsibleInventoryWriter;
 
 /**
  * @author Andrea Scarpino
