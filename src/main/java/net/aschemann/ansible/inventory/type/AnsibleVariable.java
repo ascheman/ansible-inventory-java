@@ -34,7 +34,7 @@ public class AnsibleVariable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnsibleVariable.class);
 
-	private String name;
+	private final String name;
 
 	private Object value;
 
@@ -78,12 +78,9 @@ public class AnsibleVariable {
 			return false;
 		AnsibleVariable other = (AnsibleVariable) obj;
 		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
-	}
+            return other.name == null;
+		} else return name.equals(other.name);
+    }
 
 	@Override
     public String toString() {
@@ -133,9 +130,9 @@ public class AnsibleVariable {
             f.setAccessible(true);
 
             try {
-                buf.append("\"" + f.getName() + "\": ");
+                buf.append("\"").append(f.getName()).append("\": ");
                 if (ClassUtils.isPrimitiveOrWrapper(value.getClass()) || value instanceof String) {
-                    buf.append("\"" + value + "\"");
+                    buf.append("\"").append(value).append("\"");
                 } else {
                     buf.append(valueToString(f.get(value)));
                 }
@@ -157,7 +154,7 @@ public class AnsibleVariable {
         if (!list.isEmpty()) {
             for (Object o : list) {
                 if (ClassUtils.isPrimitiveOrWrapper(o.getClass()) || o instanceof String) {
-                    buf.append("\"" + o + "\"");
+                    buf.append("\"").append(o).append("\"");
                 } else {
                     buf.append(valueToString(o));
                 }
@@ -180,9 +177,9 @@ public class AnsibleVariable {
                 final Object v = o.getValue();
 
                 if (v != null) {
-                    buf.append("'" + o.getKey() + "': ");
+                    buf.append("'").append(o.getKey()).append("': ");
                     if (ClassUtils.isPrimitiveOrWrapper(v.getClass()) || v instanceof String) {
-                        buf.append("'" + v + "'");
+                        buf.append("'").append(v).append("'");
                     } else {
                         buf.append(valueToString(v));
                     }

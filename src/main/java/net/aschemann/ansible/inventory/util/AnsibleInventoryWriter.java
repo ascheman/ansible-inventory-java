@@ -58,7 +58,7 @@ public class AnsibleInventoryWriter {
 		builder.append(host.getName());
 
 		for (AnsibleVariable variable : host.getVariables()) {
-			builder.append(" " + variableBlock(variable));
+			builder.append(" ").append(variableBlock(variable));
 		}
 
 		builder.append("\n");
@@ -106,7 +106,7 @@ public class AnsibleInventoryWriter {
 
 			if (!group.getVariables().isEmpty()) {
 				for (AnsibleVariable variable : group.getVariables()) {
-					builder.append(variableBlock(variable) + "\n");
+					builder.append(variableBlock(variable)).append("\n");
 				}
 			} else {
 				builder.append("\n");
@@ -120,7 +120,7 @@ public class AnsibleInventoryWriter {
 
 			if (!group.getSubgroups().isEmpty()) {
 				for (AnsibleGroup g : group.getSubgroups()) {
-					builder.append(g.getName() + "\n");
+					builder.append(g.getName()).append("\n");
 				}
 			} else {
 				builder.append("\n");
